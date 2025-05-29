@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "557710961079",
+    "project_id": "test2-537f3",
+    "storage_bucket": "test2-537f3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557710961079:android:ce6bef013d4051eb496032",
+        "android_client_info": {
+          "package_name": "com.satvik_0110.test2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwNAZSumEQ0yEfT9HlYPv35s2k_f_ijps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
