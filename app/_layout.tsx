@@ -1,22 +1,32 @@
 import { UserProvider } from '../context/userContext'
 import { Slot } from 'expo-router';
 import { useEffect } from 'react';
-import { setupForegroundNotifications, setupBackgroundNotifications, setupNotificationInteractionHandler } from '../lib/notifications';
-
+import { 
+  setupForegroundNotifications, 
+  setupBackgroundNotifications, 
+  setupNotificationInteractionHandler, 
+  requestNotificationPermissions, 
+  createNotificationChannel 
+} from '../lib/notifications';
 
 export default function RootLayout() {
   useEffect(() => {
-    setupForegroundNotifications();
-    setupBackgroundNotifications();
-    const unsubscribe = setupNotificationInteractionHandler();
+    const initializeNotifications = async () => {
+      await requestNotificationPermissions();
+      await createNotificationChannel();
+      
+      // Setup notification handlers once at root level
+      setupForegroundNotifications();
+      setupBackgroundNotifications();
+      setupNotificationInteractionHandler();
+    };
     
-    return () => unsubscribe();
+    initializeNotifications();
   }, []);
-
 
   return (
     <UserProvider>
-        <Slot />
+      <Slot />
     </UserProvider>
   );
 }

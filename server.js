@@ -1,4 +1,4 @@
-//server.js
+// server.js - Simplified version
 const express = require('express');
 const admin = require('firebase-admin');
 const { createClient } = require('@supabase/supabase-js');
@@ -18,55 +18,73 @@ admin.initializeApp({
 const supabaseUrl = 'https://qorzcargbhgjgbvdioym.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvcnpjYXJnYmhnamdidmRpb3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMDI4MDAsImV4cCI6MjA2Mjc3ODgwMH0.xOH74HMTRm4rS42lMlnZ2jCTDSC1ZnAkL5DB-CfclQ0';
 
-
-// Initialize Supabase
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// API Endpoints
+// server.js - Fixed version
 app.post('/send-ping', async (req, res) => {
   try {
-    const { sender_id, recipient_id } = req.body;
+    const { sender_id, recipient_id, message = 'Ping!' } = req.body;
     
-    // Get recipient's FCM token
-    const { data: recipient } = await supabase
+    // Input validation
+    if (!sender_id || !recipient_id) {
+      return res.status(400).json({ error: 'Missing sender or recipient ID' });
+    }
+
+    // Get recipient info
+    const { data: recipient, error: recipientError } = await supabase
       .from('users')
-      .select('fcm_token, domain')
+      .select('fcm_token, name')
       .eq('id', recipient_id)
       .single();
 
-    if (!recipient?.fcm_token) {
+    if (recipientError || !recipient) {
+      console.error('Recipient error:', recipientError);
       return res.status(404).json({ error: 'Recipient not found' });
     }
 
-     // Get sender info for notification display
-    const { data: sender } = await supabase
+    // Get sender info
+    const { data: sender, error: senderError } = await supabase
       .from('users')
       .select('name')
-      .eq('name', sender_id)
+      .eq('id', sender_id)
       .single();
 
-    // Store notification in database
-    const { data: notification } = await supabase
+    if (senderError || !sender) {
+      console.error('Sender error:', senderError);
+      return res.status(404).json({ error: 'Sender not found' });
+    }
+
+    // Insert notification
+    const { data: notification, error: insertError } = await supabase
       .from('notifications')
       .insert({
-        sender_id,
-        recipient_id,
-        fcm_token: recipient.fcm_token,
+        sender_id: sender_id,
+        recipient_id: recipient_id,
+        message: message,
         status: 'sent'
       })
       .select()
       .single();
 
-    // Send push notification
-    await admin.messaging().send({
+    if (insertError || !notification) {
+      console.error('Insert error:', insertError);
+      return res.status(500).json({ 
+        error: 'Failed to create notification',
+        details: insertError 
+      });
+    }
+
+    // Send push notification - FIXED PAYLOAD
+    const messagePayload = {
       token: recipient.fcm_token,
       notification: { 
         title: 'New Ping!', 
-        body: `From ${sender?.name || 'Someone'}`
+        body: `${message} from ${sender?.name || 'Someone'}`
       },
       data: { 
         notification_id: notification.id.toString(),
         sender_id: sender_id.toString(),
+        message: message,
         type: 'ping'
       },
       android: {
@@ -74,10 +92,19 @@ app.post('/send-ping', async (req, res) => {
           channelId: 'default',
           clickAction: 'FLUTTER_NOTIFICATION_CLICK'
         }
+      },
+      apns: {
+        payload: {
+          aps: {
+            category: 'PING_CATEGORY' // For iOS actions
+          }
+        }
       }
-    });
+    };
 
-    res.json(notification);
+    await admin.messaging().send(messagePayload);
+
+    res.json({ success: true, notification });
   } catch (error) {
     console.error('Error sending ping:', error);
     res.status(500).json({ error: error.message });
@@ -88,30 +115,32 @@ app.post('/mark-read', async (req, res) => {
   try {
     const { notification_id } = req.body;
     
-    // Update notification status
-    await supabase
+    console.log('Marking notification as read:', notification_id);
+
+    const { data: notification, error: fetchError } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('id', notification_id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching notification:', fetchError);
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    console.log('Notification before update:', notification);
+
+    const { error } = await supabase
       .from('notifications')
       .update({ status: 'read' })
       .eq('id', notification_id);
 
-    // Get original notification
-    const { data: original } = await supabase
-      .from('notifications')
-      .select()
-      .eq('id', notification_id)
-      .single();
-
-    if (original) {
-      // Create read receipt
-      await supabase
-        .from('notifications')
-        .insert({
-          sender_id: original.recipient_id,
-          recipient_id: original.sender_id,
-          status: 'read_ack'
-        });
+    if (error) {
+      console.error('Error updating notification:', error);
+      return res.status(500).json({ error: 'Failed to mark as read' });
     }
 
+    console.log('Successfully marked as read');
     res.json({ success: true });
   } catch (error) {
     console.error('Error marking as read:', error);
