@@ -6,13 +6,14 @@ import { supabase } from '../../lib/supabase';
 import notifee, { EventType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.86.66:3000';
+const API_URL = 'http://192.168.26.66:3000';
 const SENT_PINGS_KEY = 'sent_pings';
 
 export default function Index() {
   const { user, setUser } = useUser();
   const [members, setMembers] = useState([]);
   const [sentPings, setSentPings] = useState([]);
+  const [isPressed, setIsPressed] = useState(false);
   
   // Modal states
   const [modalVisible, setModalVisible] = useState(false);
@@ -97,6 +98,10 @@ useEffect(() => {
         }
       }
     )
+    .on('channel_error', (error) => {
+    console.error('Realtime channel error:', error);
+    // handle reconnect here if you want
+  })
     .subscribe((status, err) => {
       if (err) console.error('Subscription error:', err);
       console.log('Channel status:', status);
@@ -175,12 +180,29 @@ const updatePingStatus = async (notificationId, status) => {
     setModalVisible(true);
   };
 
+const sendGroupPing = async (topic) =>{
+  try {
+    await fetch(`${API_URL}/send-group-ping`, {
+       method: 'POST',
+       headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({topic})
+    });
+    console.log('Sent group ping');
+  } catch (error) {
+    console.error('Error sending group ping:', error);
+  }
+};
+
+
 const sendPing = async () => {
   if (!user?.id || !selectedRecipient) return;
 
   const message = customMessage.trim() || `Ping from ${user.name}`;
 
   try {
+    setIsPressed(true);
     const response = await fetch(`${API_URL}/send-ping`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -222,6 +244,8 @@ const sendPing = async () => {
   } catch (error) {
     console.error('Ping failed:', error);
     Alert.alert('Error', 'Failed to send ping. Please try again.');
+  }finally {
+    setIsPressed(false);
   }
 };
 
@@ -257,18 +281,21 @@ const sendPing = async () => {
       {/* Members List */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Send Pings</Text>
-        {members.map(member => (
-          <View key={member.id} style={styles.memberItem}>
-            <View style={styles.memberInfo}>
-              <Text style={styles.memberName}>{member.name}</Text>
-              <Text style={styles.memberDomain}>({member.domain})</Text>
+        {members.length === 0 ? (
+          <Text>Loading...</Text>
+        ) : (
+          members.map(member => (
+            <View key={member.id} style={styles.memberItem}>
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>{member.name}</Text>
+                <Text style={styles.memberDomain}>({member.domain})</Text>
+              </View>
+              <Button 
+                title="Ping" 
+                onPress={() => openPingModal(member)} 
+              />
             </View>
-            <Button 
-              title="Ping" 
-              onPress={() => openPingModal(member)} 
-            />
-          </View>
-        ))}
+        )))}
       </View>
         {/* Temporary debug button */}
       <Button 
@@ -278,6 +305,8 @@ const sendPing = async () => {
           console.log('Current AsyncStorage contents:', stored);
         }} 
       />
+      <Button title='All Software' onPress={() => sendGroupPing('software')} />
+      <Button title='All Hardware' onPress={() => sendGroupPing('hardware')} />
       {/* Sent Pings Section */}
       {sentPings.length > 0 && (
         <View style={styles.section}>
@@ -341,8 +370,9 @@ const sendPing = async () => {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.modalButton, styles.sendButton]} 
+                style={[styles.modalButton, styles.sendButton, isPressed && styles.disabledButton]} 
                 onPress={sendPing}
+                disabled={isPressed}
               >
                 <Text style={styles.sendButtonText}>Send Ping</Text>
               </TouchableOpacity>
@@ -361,6 +391,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   welcomeText: {
+    marginTop: 40,
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
@@ -517,4 +548,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',  
   },
+  disabledButton: {
+  opacity: 0.5
+}
 });

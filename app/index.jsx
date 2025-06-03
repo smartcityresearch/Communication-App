@@ -34,7 +34,7 @@ export default function Index() {
     
     setLoading(true);
     try {
-      const fcmToken = await getFCMToken();
+      const fcmToken = await getFCMToken(domain.trim());
       
       const userData = {
         name: name.trim(),

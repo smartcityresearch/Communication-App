@@ -79,7 +79,7 @@ app.post('/send-ping', async (req, res) => {
       token: recipient.fcm_token,
       notification: { 
         title: 'New Ping!', 
-        body: `${message} from ${sender?.name || 'Someone'}`
+        body: `${sender?.name || 'Someone'}: ${message}`
       },
       data: { 
         notification_id: notification.id.toString(),
@@ -147,6 +147,41 @@ app.post('/mark-read', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+app.post('/send-group-ping', async (req, res) => {
+  const { topic } = req.body;
+  try {
+    await admin.messaging().send({
+      topic,
+      notification: {
+        title: 'Group Ping',
+        body: `${topic} meeting is starting!`,
+      }
+    });
+
+    res.status(200).json({ success: true, message: 'Group ping sent' });
+  } catch (error) {
+    console.error('FCM error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+setInterval(async () => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .lt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()); // older than 10 mins
+
+    if (error) {
+      console.error('Error deleting old notifications:', error);
+    } else {
+      console.log('Old notifications deleted successfully');
+    }
+  } catch (err) {
+    console.error('Interval error:', err);
+  }
+}, 10 * 60 * 1000); // every 10 minutes
 
 const PORT = 3000;
 app.listen(PORT, () => {
