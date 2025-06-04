@@ -1,11 +1,6 @@
-1. add software/hardware group pings custom msg
-2. Loading
-3. remove the "home"
-4. custom sound
-5. token refresh thing?
-6. screen display
-7. deploy on server
-8.picker on main screen instead of text
-9. cron job
-10. send notificaition button gray out to prevent multiple clicks.
-11. admin 
+1.picker on main screen instead of text
+2.if not given permission to notif..
+3. Deploy on server
+4. Finalize screen display functionality
+5.Improve UI, add SCRC pics etc
+6.Comment, Document, CLean Github & unecessary logs

@@ -20,7 +20,7 @@ export default function Index() {
         if (stored) {
           const parsedUser = JSON.parse(stored);
           setUser(parsedUser);
-          router.replace('(tabs)');
+          router.replace('(home)');
         }
       } catch (error) {
         console.error('Error checking stored user:', error);
@@ -55,7 +55,7 @@ export default function Index() {
         await AsyncStorage.setItem('user', JSON.stringify(data));
         setUser(data);
         console.log('User data submitted successfully with ID:', data.id);
-        router.replace('(tabs)');
+        router.replace('(home)');
       }
     } catch (error) {
       console.error('Error in handleSubmit:', error);

@@ -99,7 +99,7 @@ useEffect(() => {
       }
     )
     .on('channel_error', (error) => {
-    console.error('Realtime channel error:', error);
+    console.log('hmmmmmm');
     // handle reconnect here if you want
   })
     .subscribe((status, err) => {
@@ -298,13 +298,13 @@ const sendPing = async () => {
         )))}
       </View>
         {/* Temporary debug button */}
-      <Button 
+      {/* <Button 
         title="Debug Pings" 
         onPress={async () => {
           const stored = await AsyncStorage.getItem(SENT_PINGS_KEY);
           console.log('Current AsyncStorage contents:', stored);
         }} 
-      />
+      /> */}
       <Button title='All Software' onPress={() => sendGroupPing('software')} />
       <Button title='All Hardware' onPress={() => sendGroupPing('hardware')} />
       {/* Sent Pings Section */}
