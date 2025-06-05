@@ -15,6 +15,13 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
+        name="messenger"
+        options={{ headerShown: false, tabBarLabel: "Messenger",
+        // href: !(user?.domain==='software')? null : "/messenger" 
+        }}
+      />
+
+      <Tabs.Screen
         name="admin"
         options={{ headerShown: false, tabBarLabel: "admin",
         href: !(user?.domain==='software')? null : "/admin" }}

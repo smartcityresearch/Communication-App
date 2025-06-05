@@ -4,6 +4,8 @@ const admin = require('firebase-admin');
 const { createClient } = require('@supabase/supabase-js');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
+
 
 const app = express();
 app.use(cors());
@@ -164,6 +166,17 @@ app.post('/send-group-ping', async (req, res) => {
     console.error('FCM error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+app.post('/verify-admin-key', (req, res) => {
+  const { key } = req.body;
+  if (!key) {
+    return res.status(400).json({ success: false, error: 'Key is required' });
+  }
+  if (key === process.env.ADMIN_SECRET_KEY) {
+    return res.status(200).json({ success: true });
+  }
+  return res.status(401).json({ success: false, error: 'Invalid key' });
 });
 
 setInterval(async () => {
