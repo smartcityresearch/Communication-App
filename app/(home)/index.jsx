@@ -283,9 +283,18 @@ const sendPing = async () => {
       {/* Members List */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Send Pings</Text>
+             <View style={styles.buttonContainer}>
+  <View style={styles.buttonWrapper}>
+    <Button title='All Software' onPress={() => sendGroupPing('software')} />
+  </View>
+  <View style={styles.buttonWrapper}>
+    <Button title='All Hardware' onPress={() => sendGroupPing('hardware')} />
+  </View>
+</View>
         {members.length === 0 ? (
           <Text>Loading...</Text>
         ) : (
+          
           members.map(member => (
             <View key={member.id} style={styles.memberItem}>
               <View style={styles.memberInfo}>
@@ -307,8 +316,7 @@ const sendPing = async () => {
           console.log('Current AsyncStorage contents:', stored);
         }} 
       /> */}
-      <Button title='All Software' onPress={() => sendGroupPing('software')} />
-      <Button title='All Hardware' onPress={() => sendGroupPing('hardware')} />
+ 
       {/* Sent Pings Section */}
       {sentPings.length > 0 && (
         <View style={styles.section}>

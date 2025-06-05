@@ -5,6 +5,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f5f5f5',
+    marginTop:20
   },
   welcomeText: {
     marginTop: 40,
@@ -166,7 +167,18 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
   opacity: 0.5
-}
+},
+ buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  buttonWrapper: {
+    flex: 1,
+    marginHorizontal: 5,
+  }
 });
 
 export default styles;

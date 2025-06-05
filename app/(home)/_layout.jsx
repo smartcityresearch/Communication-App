@@ -54,7 +54,7 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           tabBarLabel: "admin",
-          href: !(user?.domain==='admin') ? null : "/admin",
+          href: !(user?.domain==='admin ') ? null : "/admin",
           tabBarIcon: ({ focused, size }) => (
             <Image
               source={AdminIcon}

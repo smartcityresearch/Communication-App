@@ -1,12 +1,10 @@
-1.picker on main screen instead of text
-2.if not given permission to notif..
+
+
 3. Deploy on server
 4. Finalize screen display functionality
-5.Improve UI, add SCRC pics etc
 6.Comment, Document, CLean Github & unecessary logs
 
-8. secret key functionality
 
-->picker on main screen instead of text
--> landing page ui for admins & normal users (key enter and verification)
-->key cleaning cron job
+->delte redudnat cols in table
+-> hide supabase creds in env using react-native-env
+
