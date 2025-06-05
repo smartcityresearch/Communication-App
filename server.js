@@ -2,14 +2,14 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const { createClient } = require('@supabase/supabase-js');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.json());
 
 // Initialize Firebase
 const serviceAccount = require('./test2-537f3-firebase-adminsdk-fbsvc-02eec8b1f1.json');
@@ -17,8 +17,8 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const supabaseUrl = 'https://qorzcargbhgjgbvdioym.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvcnpjYXJnYmhnamdidmRpb3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMDI4MDAsImV4cCI6MjA2Mjc3ODgwMH0.xOH74HMTRm4rS42lMlnZ2jCTDSC1ZnAkL5DB-CfclQ0';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -168,15 +168,51 @@ app.post('/send-group-ping', async (req, res) => {
   }
 });
 
-app.post('/verify-admin-key', (req, res) => {
-  const { key } = req.body;
-  if (!key) {
-    return res.status(400).json({ success: false, error: 'Key is required' });
+app.post('/verify-key', async (req, res) => {
+  const { key, domain } = req.body;
+  
+  if (!key || !domain) {
+    return res.status(400).json({ success: false, error: 'Key and domain are required' });
   }
-  if (key === process.env.ADMIN_SECRET_KEY) {
-    return res.status(200).json({ success: true });
+  
+  if (domain === 'admin') {
+    if (key === process.env.ADMIN_SECRET_KEY) {
+      return res.status(200).json({ success: true });
+    }
+    return res.status(401).json({ success: false, error: 'Invalid admin key' });
+  } else if (domain === 'software' || domain === 'hardware') {
+    try {
+      // Check if key exists and is unused in Supabase
+      const { data, error } = await supabase
+        .from('keys')
+        .select('*')
+        .eq('key', key.trim())
+        .eq('used', false)
+        .single();
+
+      if (error || !data) {
+        return res.status(401).json({ success: false, error: 'Invalid or already used key' });
+      }
+
+      // Mark the key as used
+      const { error: updateError } = await supabase
+        .from('keys')
+        .update({ used: true })
+        .eq('key', key.trim());
+
+      if (updateError) {
+        console.error('Error updating key:', updateError);
+        return res.status(500).json({ success: false, error: 'Error processing key' });
+      }
+
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error verifying key:', error);
+      return res.status(500).json({ success: false, error: 'Server error while verifying key' });
+    }
+  } else {
+    return res.status(400).json({ success: false, error: 'Invalid domain' });
   }
-  return res.status(401).json({ success: false, error: 'Invalid key' });
 });
 
 setInterval(async () => {
@@ -194,6 +230,22 @@ setInterval(async () => {
   } catch (err) {
     console.error('Interval error:', err);
   }
+
+    try {
+    const { error } = await supabase
+      .from('keys')
+      .delete()
+      .lt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()); // older than 10 mins
+
+    if (error) {
+      console.error('Error deleting old keys:', error);
+    } else {
+      console.log('Old keys deleted successfully');
+    }
+  } catch (err) {
+    console.error('Interval error:', err);
+  }
+  
 }, 10 * 60 * 1000); // every 10 minutes
 
 const PORT = 3000;
