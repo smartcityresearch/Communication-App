@@ -1,10 +1,11 @@
-import { Button, Text, TextInput, View, StyleSheet } from 'react-native';
+import { Button, Text, TextInput, View} from 'react-native';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useUser } from '../context/userContext';
 import { getFCMToken } from '../lib/notifications';
+import styles from '../styles/landing'
 
 export default function Index() {
   const [name, setName] = useState('');
@@ -89,24 +90,3 @@ export default function Index() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 18,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
-    backgroundColor: 'white',
-  },
-});

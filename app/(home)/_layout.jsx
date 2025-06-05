@@ -17,7 +17,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="admin"
         options={{ headerShown: false, tabBarLabel: "admin",
-        href: !(user?.domain==='admin')? null : "/admin" }}
+        href: !(user?.domain==='software')? null : "/admin" }}
       />
     </Tabs>
   );
