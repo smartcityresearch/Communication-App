@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/home.js'
 
 
-const API_URL = 'http://192.168.26.66:3000';
+const API_URL = 'http://192.168.19.66:3000';
 const SENT_PINGS_KEY = 'sent_pings';
 
 export default function Index() {

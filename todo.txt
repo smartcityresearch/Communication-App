@@ -7,4 +7,5 @@
 
 ->delte redudnat cols in table
 -> hide supabase creds in env using react-native-env
-
+-> server mein ensure validation of valid user(as routes are open..just a check that user with that fcm token exists!)
+-> make a tests checklist

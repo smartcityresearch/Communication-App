@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 require('dotenv').config();
-
+const axios=require('axios');
 
 const app = express();
 app.use(cors());
@@ -21,6 +21,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const displayBoardURL= 'http://192.168.19.239/display?msg=';
 
 // server.js - Fixed version
 app.post('/send-ping', async (req, res) => {
@@ -105,7 +107,7 @@ app.post('/send-ping', async (req, res) => {
     };
 
     await admin.messaging().send(messagePayload);
-
+    await axios.get(`${displayBoardURL}${sender?.name}%20sent%20msg%20to%20${recipient?.name}`);
     res.json({ success: true, notification });
   } catch (error) {
     console.error('Error sending ping:', error);
@@ -160,7 +162,8 @@ app.post('/send-group-ping', async (req, res) => {
         body: `${topic} meeting is starting!`,
       }
     });
-
+    
+    await axios.get(`${displayBoardURL}${topic}%20meeting%20is%20starting!`);
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
     console.error('FCM error:', error);
