@@ -22,7 +22,13 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const displayBoardURL= 'http://192.168.19.239/display?msg=';
+//HAHAPOINT
+const displayBoardURL={
+  'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.30/display?msg='],
+  'hardware': ['http://192.168.19.122/display?msg='],
+  'admin': ['http://192.168.19.234/display?msg=']
+}
+
 
 // server.js - Fixed version
 app.post('/send-ping', async (req, res) => {
@@ -37,13 +43,15 @@ app.post('/send-ping', async (req, res) => {
     // Get recipient info
     const { data: recipient, error: recipientError } = await supabase
       .from('users')
-      .select('fcm_token, name')
+      .select('fcm_token, name,domain')
       .eq('id', recipient_id)
       .single();
 
     if (recipientError || !recipient) {
       console.error('Recipient error:', recipientError);
       return res.status(404).json({ error: 'Recipient not found' });
+    }else{
+      console.log(recipient);
     }
 
     // Get sender info
@@ -105,9 +113,12 @@ app.post('/send-ping', async (req, res) => {
         }
       }
     };
-
+    
     await admin.messaging().send(messagePayload);
-    await axios.get(`${displayBoardURL}${sender?.name}%20sent%20msg%20to%20${recipient?.name}`);
+    //HAHAPOINT
+    for (const url of displayBoardURL[recipient?.domain] || []) {
+  await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient?.name}`);
+}
     res.json({ success: true, notification });
   } catch (error) {
     console.error('Error sending ping:', error);
@@ -162,8 +173,11 @@ app.post('/send-group-ping', async (req, res) => {
         body: `${topic} meeting is starting!`,
       }
     });
-    
-    await axios.get(`${displayBoardURL}${topic}%20meeting%20is%20starting!`);
+    //HAHAPOINT
+     for (const url of displayBoardURL[topic] || []) {
+  await axios.get(`${url}${topic}%20meeting%20is%20starting!`);
+}
+    // await axios.get(`${displayBoardURL}${topic}%20meeting%20is%20starting!`);
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
     console.error('FCM error:', error);

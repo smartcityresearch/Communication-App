@@ -268,14 +268,5 @@ Expo Application Services configuration:
 - Additional hardware integrations
 - Multi-language support
 
-## Support
-
-For issues or questions:
-1. Check troubleshooting section above
-2. Verify all configuration files are properly set up
-3. Ensure network connectivity and permissions
-4. Review backend logs for API-related issues
-
----
 
 **Note**: This application requires proper Firebase and Supabase configuration. Ensure all API keys and configuration files are properly set up before deployment.

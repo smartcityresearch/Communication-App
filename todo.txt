@@ -7,3 +7,5 @@
 ->delte redudnat cols in table
 -> hide supabase creds in env using react-native-env
 -> add arduino code
+-> custom msg for all groups also.
+-> validation check in scrc messenger

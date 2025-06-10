@@ -200,26 +200,4 @@ If you're registered as an admin, you'll see a third tab with administrative fun
 - Make sure the recipient is still registered
 - Try restarting the app
 
-### Contact Support
-- **Technical Issues**: Contact your system administrator
-- **Registration Problems**: Reach out to any admin user
-- **Display Board Issues**: Check with facility management
 
----
-
-## 🔒 Privacy & Security
-
-### Your Data
-- Your registration information is stored securely
-- Messages are delivered in real-time and cleaned up automatically
-- Only admins can generate registration keys
-- Old data is automatically deleted for privacy
-
-### Account Security
-- Keep your registration details private
-- If you're an admin, don't share the admin password
-- Report any suspicious activity to system administrators
-
----
-
-**Congratulations!** You're now ready to use the Communication App effectively. The system is designed to help teams communicate quickly and efficiently, both through mobile notifications and physical display boards. Remember to keep notifications enabled and check both your phone and the display boards when messages arrive.
