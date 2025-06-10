@@ -164,20 +164,23 @@ app.post('/mark-read', async (req, res) => {
 });
 
 app.post('/send-group-ping', async (req, res) => {
-  const { topic } = req.body;
+  const { topic, message } = req.body; // add message parameter
+  const finalMessage = message || `${topic} meeting is starting!`; // fallback
+  
   try {
     await admin.messaging().send({
       topic,
       notification: {
         title: 'Group Ping',
-        body: `${topic} meeting is starting!`,
+        body: finalMessage, // use custom message
       }
     });
-    //HAHAPOINT
-     for (const url of displayBoardURL[topic] || []) {
-  await axios.get(`${url}${topic}%20meeting%20is%20starting!`);
-}
-    // await axios.get(`${displayBoardURL}${topic}%20meeting%20is%20starting!`);
+    
+    // Update display board URLs to use custom message
+    for (const url of displayBoardURL[topic] || []) {
+      await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
+    }
+    
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
     console.error('FCM error:', error);
