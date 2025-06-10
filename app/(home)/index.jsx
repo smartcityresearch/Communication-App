@@ -21,6 +21,9 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [customMessage, setCustomMessage] = useState('');
+  const [groupModalVisible, setGroupModalVisible] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [groupCustomMessage, setGroupCustomMessage] = useState('');
 
   // Initialize user from AsyncStorage if context is lost
   useEffect(() => {
@@ -178,22 +181,33 @@ const updatePingStatus = async (notificationId, status) => {
 
   const openPingModal = (recipient) => {
     setSelectedRecipient(recipient);
-    setCustomMessage('');
+    setCustomMessage('Come for meeting');
     setModalVisible(true);
   };
 
-const sendGroupPing = async (topic) =>{
+const openGroupPingModal = (topic) => {
+  setSelectedTopic(topic);
+  setGroupCustomMessage(`${topic} meeting is starting!`); // default message
+  setGroupModalVisible(true);
+};
+
+// Modify existing sendGroupPing to accept message parameter:
+const sendGroupPing = async (topic, message) => {
   try {
+     setIsPressed(true);
     await fetch(`${API_URL}/send-group-ping`, {
-       method: 'POST',
-       headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({topic})
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({topic, message}) // add message
     });
     console.log('Sent group ping');
+    setGroupModalVisible(false);
+    Alert.alert('Success', `Group ping sent to ${topic}!`);
   } catch (error) {
     console.error('Error sending group ping:', error);
+    Alert.alert('Error', 'Failed to send group ping. Please try again.');
+  }finally{
+    setIsPressed(false);
   }
 };
 
@@ -285,10 +299,10 @@ const sendPing = async () => {
         <Text style={styles.sectionTitle}>Send Pings</Text>
              <View style={styles.buttonContainer}>
   <View style={styles.buttonWrapper}>
-    <Button title='All Software' onPress={() => sendGroupPing('software')} />
+    <Button title='All Software' onPress={() => openGroupPingModal('software')} />
   </View>
   <View style={styles.buttonWrapper}>
-    <Button title='All Hardware' onPress={() => sendGroupPing('hardware')} />
+    <Button title='All Hardware' onPress={() => openGroupPingModal('hardware')} />
   </View>
 </View>
         {members.length === 0 ? (
@@ -390,6 +404,52 @@ const sendPing = async () => {
           </View>
         </View>
       </Modal>
+
+      {/* Group Message Modal */}
+<Modal
+  animationType="slide"
+  transparent={true}
+  visible={groupModalVisible}
+  onRequestClose={() => setGroupModalVisible(false)}
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>
+        Send Group Ping to {selectedTopic}
+      </Text>
+      
+      <TextInput
+        style={styles.messageInput}
+        placeholder="Enter your message"
+        value={groupCustomMessage}
+        onChangeText={setGroupCustomMessage}
+        multiline
+        maxLength={200}
+      />
+      
+      <Text style={styles.charCount}>
+        {groupCustomMessage.length}/200 characters
+      </Text>
+      
+      <View style={styles.modalButtons}>
+        <TouchableOpacity 
+          style={[styles.modalButton, styles.cancelButton]} 
+          onPress={() => setGroupModalVisible(false)}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.modalButton, styles.sendButton, isPressed && styles.disabledButton]} 
+          onPress={() => sendGroupPing(selectedTopic, groupCustomMessage)}
+          disabled={isPressed}
+        >
+          <Text style={styles.sendButtonText}>Send Group Ping</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
     </ScrollView>
   );
 }
