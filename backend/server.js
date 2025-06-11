@@ -138,8 +138,16 @@ app.post('/send-ping', async (req, res) => {
 
 app.post('/mark-read', async (req, res) => {
   try {
-    const { notification_id } = req.body;
-    
+    const { sender_token, notification_id } = req.body;
+     //validate user
+    const { data: validUser, error: invalidError } = await supabase
+  .from('users')
+  .select('id, name') // select only necessary fields
+  .eq('id', sender_id)
+  .eq('fcm_token', sender_token)
+  .single();
+  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
+  else console.log('correct user');
     console.log('Marking notification as read:', notification_id);
 
     const { data: notification, error: fetchError } = await supabase
@@ -174,9 +182,17 @@ app.post('/mark-read', async (req, res) => {
 });
 
 app.post('/send-group-ping', async (req, res) => {
-  const { topic, message } = req.body; // add message parameter
+  const { topic, message, sender_token } = req.body; // add message parameter
   const finalMessage = message || `${topic} meeting is starting!`; // fallback
-  
+   //validate user
+    const { data: validUser, error: invalidError } = await supabase
+  .from('users')
+  .select('id, name') // select only necessary fields
+  .eq('fcm_token', sender_token)
+  .single();
+  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
+  else console.log('correct user');
+
   try {
     await admin.messaging().send({
       topic,
@@ -188,7 +204,12 @@ app.post('/send-group-ping', async (req, res) => {
     
     // Update display board URLs to use custom message
     for (const url of displayBoardURL[topic] || []) {
-      await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
+      try {
+        await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
+      } catch (error) {
+        console.error('FCM error:', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
     }
     
     res.status(200).json({ success: true, message: 'Group ping sent' });

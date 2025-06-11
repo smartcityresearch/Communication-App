@@ -198,7 +198,7 @@ const sendGroupPing = async (topic, message) => {
     await fetch(`${API_URL}/send-group-ping`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({topic, message}) // add message
+      body: JSON.stringify({sender_token: user.fcm_token,topic, message}) // add message
     });
     console.log('Sent group ping');
     setGroupModalVisible(false);
