@@ -3,7 +3,7 @@
 1. Deploy on server
 2. solder esp
 3. adjust ports and ip's 
-4.Comment and clean logs in index.jsx and server.js
+4.Comment and clean logs in index.jsx
 5.Document-> user manual and readME
 6.Clean Github
 7. Final test with & without dev mode

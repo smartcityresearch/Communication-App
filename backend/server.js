@@ -41,7 +41,7 @@ app.post('/send-ping', async (req, res) => {
     //Additional security check to validate if sender fcm token is same as that in DB(prevents attacks)
     const { data: sender, error: senderError } = await supabase
   .from('users')
-  .select('name')
+  .select('id, name')
   .eq('id', sender_id)
   .eq('fcm_token', sender_token)
   .single();
@@ -61,21 +61,7 @@ app.post('/send-ping', async (req, res) => {
     if (recipientError || !recipient) {
       console.error('Recipient error:', recipientError);
       return res.status(404).json({ error: 'Recipient not found' });
-    }else{
-      console.log(recipient);
     }
-
-    // // Get sender info
-    // const { data: sender, error: senderError } = await supabase
-    //   .from('users')
-    //   .select('name')
-    //   .eq('id', sender_id)
-    //   .single();
-    
-    // if (senderError || !sender) {
-    //   console.error('Sender error:', senderError);
-    //   return res.status(404).json({ error: 'Sender not found' });
-    // }
 
     // Insert notification data into notifications table in supabase
     const { data: notification, error: insertError } = await supabase
@@ -95,6 +81,8 @@ app.post('/send-ping', async (req, res) => {
         error: 'Failed to create notification',
         details: insertError 
       });
+    }else{
+      console.log('Notification added to database..');
     }
 
     // Send push notification to recipient - FIXED PAYLOAD
@@ -130,6 +118,7 @@ app.post('/send-ping', async (req, res) => {
     for (const url of displayBoardURL[recipient.domain] || []) {
   await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
 }
+    console.log('Ping sent');
     res.json({ success: true, notification });
     //error handling
   } catch (error) {
@@ -142,31 +131,20 @@ app.post('/send-ping', async (req, res) => {
 //Endpoint to mark notificationas as read
 app.post('/mark-read', async (req, res) => {
   try {
-    const { sender_token, notification_id } = req.body;
+    const { notification_id } = req.body; //ender_id, sender_token, 
 
-    //validate user making request by cross checking their fcm_token and id in database
-    const { data: validUser, error: invalidError } = await supabase
-  .from('users')
-  .select('id, name') // select only necessary fields
-  .eq('id', sender_id)
-  .eq('fcm_token', sender_token)
-  .single();
-  if(!validUser || invalidError) return res.status(401).json({ error: 'Unauthorized access' });
-  else console.log('User validated.');
   console.log('Marking notification as read:', notification_id);
     // //fetching notification before updating its status as read
-    // const { data: notification, error: fetchError } = await supabase
-    //   .from('notifications')
-    //   .select('*')
-    //   .eq('id', notification_id)
-    //   .single();
+    const { data: notification, error: fetchError } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('id', notification_id)
+      .single();
 
-    // if (fetchError) {
-    //   console.error('Error fetching notification:', fetchError);
-    //   return res.status(404).json({ error: 'Notification not found' });
-    // }
-
-    // console.log('Notification before update:', notification);
+    if (!notification || fetchError) {
+      console.error('Error fetching notification:', fetchError);
+      return res.status(404).json({ error: 'Notification not found' });
+    }
 
     //updating notification status as read
     const { error } = await supabase
@@ -214,6 +192,7 @@ app.post('/send-group-ping', async (req, res) => {
     for (const url of displayBoardURL[topic]) {
         await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
     }
+    console.log('Group ping sent');
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
     console.error('FCM error:', error);
@@ -261,6 +240,7 @@ app.post('/verify-key', async (req, res) => {
         console.error('Error updating key:', updateError);
         return res.status(500).json({ success: false, error: 'Error processing key' });
       }
+      console.log('Key verified');
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error verifying key:', error);

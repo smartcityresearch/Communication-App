@@ -1,31 +1,30 @@
-// (tabs)/index.jsx - Simplified with AsyncStorage tracking
 import { useState, useEffect } from 'react';
-import { View, Text, Button, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { useUser } from '../../context/userContext';
 import { supabase } from '../../lib/supabase';
-import notifee, { EventType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../../styles/home.js'
 
-
+//backend url
 const API_URL = 'http://192.168.19.66:3000';
+//constant defining name of notification data stored in localStorage(AsyncStorage)
 const SENT_PINGS_KEY = 'sent_pings';
 
 export default function Index() {
-  const { user, setUser } = useUser();
-  const [members, setMembers] = useState([]);
-  const [sentPings, setSentPings] = useState([]);
-  const [isPressed, setIsPressed] = useState(false);
+  const { user, setUser } = useUser(); //user context
+  const [members, setMembers] = useState([]); //organization member data queried from database
+  const [sentPings, setSentPings] = useState([]); //stores sent notifications
+  const [isPressed, setIsPressed] = useState(false); //stores button state
   
-  // Modal states
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedRecipient, setSelectedRecipient] = useState(null);
-  const [customMessage, setCustomMessage] = useState('');
-  const [groupModalVisible, setGroupModalVisible] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState('');
-  const [groupCustomMessage, setGroupCustomMessage] = useState('');
+  // Modal(popup on clicking ping buttons) states
+  const [modalVisible, setModalVisible] = useState(false); //for indvidual ping modal
+  const [selectedRecipient, setSelectedRecipient] = useState(null); //details of individual ping recipient
+  const [customMessage, setCustomMessage] = useState(''); //custom message entered
+  const [groupModalVisible, setGroupModalVisible] = useState(false); //for group ping modal
+  const [selectedTopic, setSelectedTopic] = useState(''); //domain name for selecting firebase topic
+  const [groupCustomMessage, setGroupCustomMessage] = useState(''); //group ping custom message entered
 
-  // Initialize user from AsyncStorage if context is lost
+  // Initialize user from AsyncStorage if context is lost(safety measure in case of unexpected refreshes)
   useEffect(() => {
     const initializeUser = async () => {
       if (!user) {
@@ -43,7 +42,7 @@ export default function Index() {
     initializeUser();
   }, [user, setUser]);
 
-  // Load sent pings from AsyncStorage
+  // Load sent pings data from AsyncStorage
   useEffect(() => {
     const loadSentPings = async () => {
       try {
@@ -62,7 +61,7 @@ export default function Index() {
     }
   }, [user]);
 
-  // Fetch members
+  // Fetch organization members from supabase
   useEffect(() => {
     if (!user?.id) return;
 
@@ -71,7 +70,7 @@ export default function Index() {
         const { data: users } = await supabase
           .from('users')
           .select('*')
-          // .neq('id', user.id);
+          // .neq('id', user.id); //ignores user themselves(can comment out for testing)
         setMembers(users || []);
       } catch (error) {
         console.error('Error fetching members:', error);
@@ -82,31 +81,25 @@ export default function Index() {
   }, [user]);
 useEffect(() => {
   if (!user?.id) return;
-
-  console.log('Setting up realtime listener for user:', user.id);
+  console.log('Setting up realtime listener for user:', user.id); //unique supabase realtime listener to capture change in notification table(for read receipts)
 
   const channel = supabase
-    .channel(`ping-reads-${user.id}`) // Unique channel
+    .channel(`ping-reads-${user.id}`) // Unique realtime listening channel based on their id
     .on(
       'postgres_changes',
       {
         event: 'UPDATE',
         schema: 'public',
         table: 'notifications',
-        filter: `sender_id=eq.${Number(user.id)}`,
+        filter: `sender_id=eq.${Number(user.id)}`, //will trigger when update in notifications table and a notification sent by that user's status changes to read
       },
       (payload) => {
-        console.log('Realtime update received:', payload);
         if (payload.new.status === 'read') {
           console.log('Updating ping status to read for ID:', payload.new.id);
-          updatePingStatus(payload.new.id.toString(), 'read');
+          updatePingStatus(payload.new.id.toString(), 'read'); //updates status in localStorage
         }
       }
     )
-    .on('channel_error', (error) => {
-    console.log('hmmmmmm');
-    // handle reconnect here if you want
-  })
     .subscribe((status, err) => {
       if (err) console.error('Subscription error:', err);
       console.log('Channel status:', status);
@@ -116,28 +109,9 @@ useEffect(() => {
     console.log('Unsubscribing from channel');
     channel.unsubscribe();
   };
-}, [user?.id]); // Only re-run if user.id changes
+}, [user?.id]); // Only re-run and re-subscribe to channel if user.id changes(will also trigger when app reloaded and id loads from context.Thus restarting app is a good way to fix issues if unable to receive mark as read updates)
 
-  // Handle notification actions
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
-      if (type === EventType.ACTION_PRESS && detail.pressAction?.id === 'mark-read') {
-        const notificationId = detail.notification?.data?.notification_id;
-        if (notificationId) {
-          fetch(`${API_URL}/mark-read`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ notification_id: notificationId })
-          }).catch(error => console.error('Error marking as read:', error));
-        }
-      }
-    });
-
-    return unsubscribe;
-  }, [user]);
-
+  //saves sent pings in local storage
   const saveSentPings = async (pings) => {
     try {
       await AsyncStorage.setItem(SENT_PINGS_KEY, JSON.stringify(pings));
@@ -146,7 +120,7 @@ useEffect(() => {
       console.error('Error saving sent pings:', error);
     }
   };
-
+  //updates status of pings in local storage(essential for double tick(read) UI update)
 const updatePingStatus = async (notificationId, status) => {
   try {
     console.log('Attempting to update status for:', notificationId);
@@ -154,71 +128,64 @@ const updatePingStatus = async (notificationId, status) => {
     
     if (stored) {
       const pings = JSON.parse(stored);
-      console.log('Current pings in storage:', pings);
 
-      // Find the ping we're trying to update
+      // Find the ping we're trying to update by mtaching notification id
       const pingToUpdate = pings.find(p => p.notificationId === notificationId);
-      console.log('Found ping to update:', pingToUpdate);
 
+      //store updated pings
       const updatedPings = pings.map(ping => 
         ping.notificationId === notificationId.toString() 
           ? { ...ping, status } 
           : ping
       );
-      console.log('Looking for notificationId:', notificationId);
-    console.log('Type of stored ID:', typeof pings[0]?.notificationId);
-    console.log('Type of incoming ID:', typeof notificationId);
-    console.log('Updated pings:', updatedPings);
       await saveSentPings(updatedPings);
       setSentPings(updatedPings);
-    }else{
-      console.log('Not stored bro..');
     }
   } catch (error) {
     console.error('Error updating ping status:', error);
   }
 };
-
+  //Individual ping modal, default msg displayed is "come for meeting"
   const openPingModal = (recipient) => {
     setSelectedRecipient(recipient);
     setCustomMessage('Come for meeting');
-    setModalVisible(true);
+    setModalVisible(true); //shows popup(modal)
   };
-
+  //Group ping modal, default msg displayed is "{domain} meeting is starting!"
 const openGroupPingModal = (topic) => {
   setSelectedTopic(topic);
   setGroupCustomMessage(`${topic} meeting is starting!`); // default message
   setGroupModalVisible(true);
 };
 
-// Modify existing sendGroupPing to accept message parameter:
+// Function to send request to /send-group-ping with custom message entered to user
 const sendGroupPing = async (topic, message) => {
   try {
      setIsPressed(true);
     await fetch(`${API_URL}/send-group-ping`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({sender_token: user.fcm_token,topic, message}) // add message
+      body: JSON.stringify({sender_token: user.fcm_token,topic, message})
     });
     console.log('Sent group ping');
-    setGroupModalVisible(false);
+    setGroupModalVisible(false); //close modal
     Alert.alert('Success', `Group ping sent to ${topic}!`);
   } catch (error) {
     console.error('Error sending group ping:', error);
     Alert.alert('Error', 'Failed to send group ping. Please try again.');
   }finally{
-    setIsPressed(false);
+    setIsPressed(false); 
   }
 };
 
-
+// Function to send request to /send-ping with custom message entered to user
 const sendPing = async () => {
   if (!user?.id || !selectedRecipient) return;
 
-  const message = customMessage.trim() || `Ping from ${user.name}`;
+  const message = customMessage.trim() || `Come for meeting`; //default alternate message if empty message
 
   try {
-    setIsPressed(true);
+    setIsPressed(true); //disables button to prevent multiple clicks
     const response = await fetch(`${API_URL}/send-ping`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -235,11 +202,8 @@ const sendPing = async () => {
     }
 
     const result = await response.json();
-    
-    // DEBUG: Log the notification ID from server response
-    console.log('Server response notification ID:', result.notification.id);
-    console.log('Current user ID:', user.id);
 
+    //Pings format for being saved in localStorage
     const newPing = {
       id: Date.now(),
       notificationId: result.notification.id,
@@ -249,14 +213,15 @@ const sendPing = async () => {
       status: 'sent'
     };
 
-    // DEBUG: Log before saving
-    console.log('New ping being saved:', newPing);
+    // // DEBUG: Log before saving
 
+    //update sent pings in local storage by adding the newly sent one
     const updatedPings = [newPing, ...sentPings];
     await saveSentPings(updatedPings);
     setSentPings(updatedPings);
 
-    setModalVisible(false);
+    setModalVisible(false); //close modal
+    console.log('Sent ping!')
     Alert.alert('Success', `Ping sent to ${selectedRecipient.name}!`);
   } catch (error) {
     console.error('Ping failed:', error);
@@ -266,6 +231,7 @@ const sendPing = async () => {
   }
 };
 
+//clear All button functionality
   const clearAllPings = async () => {
     try {
       await AsyncStorage.removeItem(SENT_PINGS_KEY);
@@ -275,6 +241,7 @@ const sendPing = async () => {
     }
   };
 
+  //function to set UI of sent notification/ping based on whether it has been read or not.(updates in real time)
   const getStatusIcon = (status) => {
     switch (status) {
       case 'sent': return <Text style={styles.singleTick}>✓</Text>;
@@ -282,7 +249,7 @@ const sendPing = async () => {
       default: return null;
     }
   };
-
+//precautionary safety check to set loading.. text in case user context missing, app wont crash.
   if (!user) {
     return (
       <View style={styles.container}>
@@ -295,7 +262,7 @@ const sendPing = async () => {
     <ScrollView style={styles.container}>
       <Text style={styles.welcomeText}>Welcome, {user.name}!</Text>
       
-      {/* Members List */}
+      {/* Members List; Maps their data to a <View> element from supabase */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Send Pings</Text>
              <View style={styles.buttonContainer}>
@@ -318,19 +285,11 @@ const sendPing = async () => {
               </View>
               <Button 
                 title="Ping" 
-                onPress={() => openPingModal(member)} 
+                onPress={() => openPingModal(member)} //modal opens to enter custom msg on pressing ping button
               />
             </View>
         )))}
       </View>
-        {/* Temporary debug button */}
-      {/* <Button 
-        title="Debug Pings" 
-        onPress={async () => {
-          const stored = await AsyncStorage.getItem(SENT_PINGS_KEY);
-          console.log('Current AsyncStorage contents:', stored);
-        }} 
-      /> */}
  
       {/* Sent Pings Section */}
       {sentPings.length > 0 && (
@@ -406,7 +365,8 @@ const sendPing = async () => {
         </View>
       </Modal>
 
-      {/* Group Message Modal */}
+
+{/* Group Message Modal */}
 <Modal
   animationType="slide"
   transparent={true}
