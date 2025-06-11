@@ -224,6 +224,7 @@ const sendPing = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         sender_id: user.id, 
+        sender_token: user.fcm_token,
         recipient_id: selectedRecipient.id,
         message: message
       })

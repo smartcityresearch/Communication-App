@@ -33,12 +33,22 @@ const displayBoardURL={
 // server.js - Fixed version
 app.post('/send-ping', async (req, res) => {
   try {
-    const { sender_id, recipient_id, message = 'Ping!' } = req.body;
+    const { sender_id, recipient_id, sender_token, message = 'Ping!' } = req.body;
     
     // Input validation
     if (!sender_id || !recipient_id) {
       return res.status(400).json({ error: 'Missing sender or recipient ID' });
     }
+
+    //validate user
+    const { data: validUser, error: invalidError } = await supabase
+  .from('users')
+  .select('id, name') // select only necessary fields
+  .eq('id', sender_id)
+  .eq('fcm_token', sender_token)
+  .single();
+  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
+  else console.log('correct user');
 
     // Get recipient info
     const { data: recipient, error: recipientError } = await supabase
