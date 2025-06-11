@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-
+//Styles for app/index.jsx (landing page)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -11,7 +11,7 @@ Welcome to the SCRC Communication App! This guide will help you navigate through
 When you first open the app, you'll be greeted with the onboarding screen where you need to register yourself.
 
 #### Step 1: Enter Your Details
-1. **Name**: Enter your full name as you'd like others to see it
+1. **Name**: Enter your name as you'd like others to see it
 2. **Domain**: Select your department/role from the dropdown:
    - **Software**: For software team members
    - **Hardware**: For hardware team members  

@@ -7,6 +7,7 @@ ESP8266WebServer server(80);
 const char* ssid = "Galaxy A15";
 const char* password = "satvik0110";
 
+// Hardware connections for ESP8266
 #define BUZZER_PIN 5  // D1
 #define CLK_PIN   14 //D5
 #define DATA_PIN  13 //D7
@@ -24,6 +25,7 @@ String customMessage = "";
 bool isCustomMessage = false;
 int scrollCount = 0;
 
+//Function to connect to WiFi
 void connectToWiFi() {
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wi-Fi");
@@ -43,6 +45,7 @@ void connectToWiFi() {
   }
 }
 
+//custom msg display logic on request
 void handleDisplay() {
   if (server.hasArg("msg")) {
     customMessage = server.arg("msg") + "  ";
@@ -105,7 +108,7 @@ void loop() {
   server.handleClient();
 
   scrollMessage(currentMessage.c_str());
-
+ //scrolls custom msg 5 times before returning to default msg(SCRC Lab)
   if (isCustomMessage) {
     scrollCount++;
     if (scrollCount >= 5) {

@@ -1,4 +1,4 @@
-// server.js - Simplified version
+// imports
 const express = require('express');
 const admin = require('firebase-admin');
 const { createClient } = require('@supabase/supabase-js');
@@ -7,48 +7,49 @@ require('dotenv').config();
 const axios=require('axios');
 
 const app = express();
+//middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.json());
 
-// Initialize Firebase
+// Initialize Firebase from firebase config file.
 const serviceAccount = require('./test2-537f3-firebase-adminsdk-fbsvc-02eec8b1f1.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
-
+//retireve credentials from .env and create supabase client for CRUD operations.
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-//HAHAPOINT
+//Display board ip's mapped by domain
 const displayBoardURL={
   'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.30/display?msg='],
   'hardware': ['http://192.168.19.122/display?msg='],
   'admin': ['http://192.168.19.234/display?msg=']
 }
 
-
-// server.js - Fixed version
+//Endpoint to handle individual ping
 app.post('/send-ping', async (req, res) => {
   try {
     const { sender_id, recipient_id, sender_token, message = 'Ping!' } = req.body;
     
-    // Input validation
+    // Input validation to check request format, ie, if sender and receiver id's exist in DB
     if (!sender_id || !recipient_id) {
       return res.status(400).json({ error: 'Missing sender or recipient ID' });
     }
 
-    //validate user
-    const { data: validUser, error: invalidError } = await supabase
+    //Additional security check to validate if sender fcm token is same as that in DB(prevents attacks)
+    const { data: sender, error: senderError } = await supabase
   .from('users')
-  .select('id, name') // select only necessary fields
+  .select('name')
   .eq('id', sender_id)
   .eq('fcm_token', sender_token)
   .single();
-  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
-  else console.log('correct user');
+  if(!sender || senderError){
+    console.error('Sender error:', senderError);
+    return res.status(401).json({ error: 'Unauthorized access' });
+  } 
+  else console.log('Sender validated');
 
     // Get recipient info
     const { data: recipient, error: recipientError } = await supabase
@@ -64,19 +65,19 @@ app.post('/send-ping', async (req, res) => {
       console.log(recipient);
     }
 
-    // Get sender info
-    const { data: sender, error: senderError } = await supabase
-      .from('users')
-      .select('name')
-      .eq('id', sender_id)
-      .single();
+    // // Get sender info
+    // const { data: sender, error: senderError } = await supabase
+    //   .from('users')
+    //   .select('name')
+    //   .eq('id', sender_id)
+    //   .single();
+    
+    // if (senderError || !sender) {
+    //   console.error('Sender error:', senderError);
+    //   return res.status(404).json({ error: 'Sender not found' });
+    // }
 
-    if (senderError || !sender) {
-      console.error('Sender error:', senderError);
-      return res.status(404).json({ error: 'Sender not found' });
-    }
-
-    // Insert notification
+    // Insert notification data into notifications table in supabase
     const { data: notification, error: insertError } = await supabase
       .from('notifications')
       .insert({
@@ -96,12 +97,12 @@ app.post('/send-ping', async (req, res) => {
       });
     }
 
-    // Send push notification - FIXED PAYLOAD
+    // Send push notification to recipient - FIXED PAYLOAD
     const messagePayload = {
       token: recipient.fcm_token,
       notification: { 
         title: 'New Ping!', 
-        body: `${sender?.name || 'Someone'}: ${message}`
+        body: `${sender.name}: ${message}`
       },
       data: { 
         notification_id: notification.id.toString(),
@@ -123,46 +124,51 @@ app.post('/send-ping', async (req, res) => {
         }
       }
     };
-    
+    //delivering push notification via firebase
     await admin.messaging().send(messagePayload);
-    //HAHAPOINT
-    for (const url of displayBoardURL[recipient?.domain] || []) {
-  await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient?.name}`);
+    //Display Messages on display boards corresponding to recipient's domain
+    for (const url of displayBoardURL[recipient.domain] || []) {
+  await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
 }
     res.json({ success: true, notification });
+    //error handling
   } catch (error) {
     console.error('Error sending ping:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+
+//Endpoint to mark notificationas as read
 app.post('/mark-read', async (req, res) => {
   try {
     const { sender_token, notification_id } = req.body;
-     //validate user
+
+    //validate user making request by cross checking their fcm_token and id in database
     const { data: validUser, error: invalidError } = await supabase
   .from('users')
   .select('id, name') // select only necessary fields
   .eq('id', sender_id)
   .eq('fcm_token', sender_token)
   .single();
-  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
-  else console.log('correct user');
-    console.log('Marking notification as read:', notification_id);
+  if(!validUser || invalidError) return res.status(401).json({ error: 'Unauthorized access' });
+  else console.log('User validated.');
+  console.log('Marking notification as read:', notification_id);
+    // //fetching notification before updating its status as read
+    // const { data: notification, error: fetchError } = await supabase
+    //   .from('notifications')
+    //   .select('*')
+    //   .eq('id', notification_id)
+    //   .single();
 
-    const { data: notification, error: fetchError } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('id', notification_id)
-      .single();
+    // if (fetchError) {
+    //   console.error('Error fetching notification:', fetchError);
+    //   return res.status(404).json({ error: 'Notification not found' });
+    // }
 
-    if (fetchError) {
-      console.error('Error fetching notification:', fetchError);
-      return res.status(404).json({ error: 'Notification not found' });
-    }
+    // console.log('Notification before update:', notification);
 
-    console.log('Notification before update:', notification);
-
+    //updating notification status as read
     const { error } = await supabase
       .from('notifications')
       .update({ status: 'read' })
@@ -181,9 +187,11 @@ app.post('/mark-read', async (req, res) => {
   }
 });
 
+
+//Endpoint to handle domain group pings
 app.post('/send-group-ping', async (req, res) => {
-  const { topic, message, sender_token } = req.body; // add message parameter
-  const finalMessage = message || `${topic} meeting is starting!`; // fallback
+  const { topic, message, sender_token } = req.body; 
+  const finalMessage = message || `${topic} meeting is starting!`; // fallback mesage if empty text
    //validate user
     const { data: validUser, error: invalidError } = await supabase
   .from('users')
@@ -191,27 +199,21 @@ app.post('/send-group-ping', async (req, res) => {
   .eq('fcm_token', sender_token)
   .single();
   if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
-  else console.log('correct user');
+  else console.log('User validated.');
 
+  //send push notification
   try {
     await admin.messaging().send({
       topic,
       notification: {
         title: 'Group Ping',
-        body: finalMessage, // use custom message
+        body: finalMessage,
       }
     });
-    
-    // Update display board URLs to use custom message
-    for (const url of displayBoardURL[topic] || []) {
-      try {
+    //corresponding display boards to see the message
+    for (const url of displayBoardURL[topic]) {
         await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
-      } catch (error) {
-        console.error('FCM error:', error);
-        res.status(500).json({ success: false, error: error.message });
-      }
     }
-    
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
     console.error('FCM error:', error);
@@ -219,19 +221,23 @@ app.post('/send-group-ping', async (req, res) => {
   }
 });
 
+
+//Endpoint to verify security key
 app.post('/verify-key', async (req, res) => {
   const { key, domain } = req.body;
-  
+  //if empty fields sent with request
   if (!key || !domain) {
     return res.status(400).json({ success: false, error: 'Key and domain are required' });
   }
-  
+  //for admin- checks with predefined key stored in .env
   if (domain === 'admin') {
     if (key === process.env.ADMIN_SECRET_KEY) {
       return res.status(200).json({ success: true });
     }
     return res.status(401).json({ success: false, error: 'Invalid admin key' });
-  } else if (domain === 'software' || domain === 'hardware') {
+  } 
+  //for other domains -checks if entered key is a valid unusued key in supabase
+  else if (domain === 'software' || domain === 'hardware') {
     try {
       // Check if key exists and is unused in Supabase
       const { data, error } = await supabase
@@ -255,7 +261,6 @@ app.post('/verify-key', async (req, res) => {
         console.error('Error updating key:', updateError);
         return res.status(500).json({ success: false, error: 'Error processing key' });
       }
-
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Error verifying key:', error);
@@ -266,6 +271,7 @@ app.post('/verify-key', async (req, res) => {
   }
 });
 
+//Cron job- deletes data older than 10 minutes in notifications table[to prevent bloat] and keys table[security] 
 setInterval(async () => {
   try {
     const { error } = await supabase

@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-
+//Styles for (home)/messenger
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -9,7 +9,10 @@ import {
   createNotificationChannel 
 } from '../lib/notifications';
 
+
+
 export default function RootLayout() {
+  //initialize and steup notification listener channels
   useEffect(() => {
     const initializeNotifications = async () => {
       await requestNotificationPermissions();

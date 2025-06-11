@@ -1,6 +1,9 @@
 
 
-3. Deploy on server
-6.Comment, Document, CLean Github & unecessary logs
-
--> hide supabase creds in env using react-native-env
+1. Deploy on server
+2. solder esp
+3. adjust ports and ip's 
+4.Comment and clean logs in index.jsx and server.js
+5.Document-> user manual and readME
+6.Clean Github
+7. Final test with & without dev mode

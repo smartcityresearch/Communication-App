@@ -10,6 +10,7 @@ export default function TabLayout() {
 
   return (
     <Tabs>
+      {/* Main home page */}
       <Tabs.Screen
         name="index"
         options={{
@@ -28,13 +29,12 @@ export default function TabLayout() {
           ),
         }}
       />
-
+  {/* SCRC Messenger page */}
       <Tabs.Screen
         name="messenger"
         options={{
           headerShown: false,
           tabBarLabel: "Messenger",
-          // href: !(user?.domain==='software')? null : "/messenger"
           tabBarIcon: ({ focused, size }) => (
             <Image
               source={MessengerIcon}
@@ -48,7 +48,7 @@ export default function TabLayout() {
           ),
         }}
       />
-
+    {/* Admin panel with restricted access */}
       <Tabs.Screen
         name="admin"
         options={{

@@ -1,3 +1,5 @@
+//File to create user context to persist user data across screens without needing to fetch from local storage
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -7,7 +9,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from storage on app start
+  // Load user from storage on app start(if already exists)
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -24,7 +26,7 @@ export const UserProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Enhanced setUser that also persists to storage
+  // if by chance data not stored in async storage, stores it from context
   const setUserWithPersistence = async (userData) => {
     try {
       if (userData) {
@@ -38,7 +40,7 @@ export const UserProvider = ({ children }) => {
       setUser(userData); // Set anyway, just log the storage error
     }
   };
-
+  //wrap context around all screens
   return (
     <UserContext.Provider value={{ 
       user, 
@@ -50,6 +52,7 @@ export const UserProvider = ({ children }) => {
   );
 };
 
+//exporting context to be used in different files
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

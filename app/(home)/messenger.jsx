@@ -2,8 +2,13 @@ import { useState } from 'react';
 import {View,Text,TextInput, TouchableOpacity,Alert, ScrollView, SafeAreaView} from 'react-native';
 import styles from '../../styles/messenger';
 
+
+//IMPORTANT: TO USE THIS APP, YOU MUST BE CONNECTED TO IIIT NETWORK!
+
+
 const messenger = () => {
   const [activeTab, setActiveTab] = useState('announcement');
+  //used to store entered/selected data/location
   const [selectedLocation, setSelectedLocation] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
   const [line1, setLine1] = useState('');
@@ -12,15 +17,17 @@ const messenger = () => {
   const [line4, setLine4] = useState('');
   const [command, setCommand] = useState('');
 
+    //hard-coded display board ip's
   const locations = [
     { name: 'SCRC LAB 1', uri: 'http://10.2.201.167:8100/update' },
     { name: 'HARDWARE LAB', uri: 'http://10.2.201.164:6001' },
     { name: 'DISPLAY BOARD', uri: 'http://10.2.201.147:8100/update' },
     { name: 'SOFTWARE LAB', uri: 'http://10.2.201.145:8100' },
   ];
-
+//for sensor data- taken from SCRC Messenger
   const commandSuggestions = ['aq', 'srEM', 'wd', 'wf', 'wn'];
 
+  //Send announcements, data type='TXT' [does not work, did not work in SCRC Messenger either]
   const sendAnnouncementData = async () => {
     if (!selectedLocation || !announcementText) {
       Alert.alert('Error', 'Please select a location and enter announcement text');
@@ -53,8 +60,9 @@ const messenger = () => {
       console.error('Error:', error);
     }
   };
-
+  //function to send 4 lines data with type TXT
   const sendLinesData = async () => {
+    //error handling if no text entered and no location selected.
     if (!selectedLocation || (!line1 && !line2 && !line3 && !line4)) {
       Alert.alert('Error', 'Please select a location and enter at least one line');
       return;
@@ -64,7 +72,7 @@ const messenger = () => {
     const jsonData = {
       type: 'TXT'
     };
-
+    //passing data as 4 lines in json(one, two, three, four)
     if (line1) jsonData.one = line1;
     if (line2) jsonData.two = line2;
     if (line3) jsonData.three = line3;
@@ -78,7 +86,7 @@ const messenger = () => {
         },
         body: JSON.stringify(jsonData),
       });
-
+      //successful => reset stored data.
       if (response.ok) {
         Alert.alert('Success', 'Lines sent successfully!');
         setLine1('');
@@ -88,18 +96,19 @@ const messenger = () => {
       } else {
         Alert.alert('Error', 'Failed to send lines');
       }
+      //error handling
     } catch (error) {
       Alert.alert('Error', 'Network error occurred');
       console.error('Error:', error);
     }
   };
-
+  //for sensor data- does not work[did not work in SCRC messenger either]
   const sendCommandData = async () => {
     if (!selectedLocation || !command) {
       Alert.alert('Error', 'Please select a location and enter a command');
       return;
     }
-
+    //payload type is CMD
     const location = locations.find(loc => loc.name === selectedLocation);
     const jsonData = {
       data: command,
@@ -127,6 +136,7 @@ const messenger = () => {
     }
   };
 
+  //UI component for Location selector
   const renderLocationSelector = () => (
     <View style={styles.locationSelector}>
       <Text style={styles.sectionTitle}>Select Location:</Text>
@@ -150,6 +160,7 @@ const messenger = () => {
     </View>
   );
 
+  //UI component for Announcement Tab
   const renderAnnouncementTab = () => (
     <ScrollView style={styles.tabContent}>
       {renderLocationSelector()}
@@ -174,6 +185,8 @@ const messenger = () => {
         </View>
 
         {/* Multiple Lines (for Hardware Lab) */}
+        {/* Restricts characters to <=10 */}
+        
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Multiple Lines (Max 10 chars each):</Text>
           <TextInput
@@ -216,6 +229,7 @@ const messenger = () => {
     </ScrollView>
   );
 
+  //UI component for retrieving sensor data
   const renderSensorDataTab = () => (
     <ScrollView style={styles.tabContent}>
       {renderLocationSelector()}
@@ -232,7 +246,7 @@ const messenger = () => {
             value={command}
             onChangeText={setCommand}
           />
-          
+          {/* Quick commands feature taken from SCRC messenger- to allow fast selection of sensor type */}
           <Text style={styles.inputLabel}>Quick Commands:</Text>
           <View style={styles.commandSuggestions}>
             {commandSuggestions.map((suggestion) => (
@@ -253,7 +267,7 @@ const messenger = () => {
       </View>
     </ScrollView>
   );
-
+  //Compiled overall UI
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
