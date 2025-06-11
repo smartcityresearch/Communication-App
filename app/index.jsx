@@ -56,7 +56,7 @@ export default function Index() {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.26.66:3000/verify-key', {
+      const response = await fetch('http://192.168.19.66:3000/verify-key', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

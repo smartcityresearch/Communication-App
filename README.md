@@ -23,16 +23,17 @@ A real-time communication application built with Expo React Native and Express.j
 
 ## Requirements
 
-### Frontend Dependencies
+### Frontend Dependencies(do npm install to get exact versions)
+- Node.js(v18.19.1)
 - Expo SDK 53
-- React Native
+- React Native:
 - Supabase Client
-- Firebase Cloud Messaging (FCM)
+- Firebase Messaging
 - Notifee for advanced notifications
 - AsyncStorage for local data persistence
 
 ### Backend Dependencies
-- Node.js
+- Node.js(v18.19.1)
 - Express.js
 - Firebase Admin SDK
 - Supabase
@@ -46,10 +47,9 @@ A real-time communication application built with Expo React Native and Express.j
 
 ### Prerequisites
 1. Node.js and npm installed
-2. Expo CLI installed globally: `npm install -g @expo/cli`
-3. Android device with USB debugging enabled
-4. Docker (for backend deployment)
-5. Expo Go app version 53 on your device
+2. Android device with USB debugging enabled
+3. Docker (for backend deployment)
+4. Expo Go app version 53 on your device
 
 ### Backend Setup
 
@@ -59,14 +59,10 @@ A real-time communication application built with Expo React Native and Express.j
 cd backend
 
 # Build and run using Docker Compose
-docker-compose up --build
-
-# Or build and run manually
-docker build -t communication-app-backend .
-docker run -p 3000:3000 communication-app-backend
+docker compose -f docker-compose.yaml up -d
 ```
 
-#### Manual Setup
+#### Manual Setup(if already have correct node environment)
 ```bash
 cd backend
 npm install
@@ -75,18 +71,14 @@ npm start
 
 ### Frontend Setup
 
-1. **Clone the repository**
-```bash
-git clone [repository-url]
-cd [project-directory]
-```
-
-2. **Install dependencies**
+1. **Install dependencies**
 ```bash
 npm install
 ```
 
 3. **Build for development**
+- install eas cli eas-cli/16.6.1 linux-x64 node-v18.19.1
+
 ```bash
 eas build --platform android --profile development --local
 ```
@@ -140,7 +132,17 @@ Expo Application Services configuration:
 │   ├── server.js              # Main Express server
 │   ├── Dockerfile             # Docker configuration
 │   ├── docker-compose.yaml    # Docker Compose setup
-│   └── test2-537f3-firebase-adminsdk-fbsvc-02eec8b1f1.json
+│   ├── test2-537f3-firebase-adminsdk-fbsvc-02eec8b1f1.json
+|   ├── .dockerignore
+|   ├── .env
+── app/
+│   ├── index.jsx       # Notification handlers
+│   |── _layout.tsx
+|   ├── (home)
+|        ├── index.jsx
+|        ├── _layout.jsx
+|        ├── messenger.jsx
+|        ├── admin.jsx
 ├── lib/
 │   ├── notifications.js       # Notification handlers
 │   └── supabase.js           # Supabase client setup
@@ -201,12 +203,6 @@ Expo Application Services configuration:
 - **POST** `/send-group-ping`: Send domain-based group notifications  
 - **POST** `/mark-read`: Handle message read acknowledgments
 - **POST** `/verify-key`: Validate registration keys during onboarding
-
-### Security Features
-- Database existence validation for all messaging operations
-- Automatic key expiration and cleanup
-- Cron jobs for database maintenance (every 10 minutes)
-- Used key tracking to prevent reuse
 
 ## Scalability & Deployment
 

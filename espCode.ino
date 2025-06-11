@@ -7,7 +7,7 @@ ESP8266WebServer server(80);
 const char* ssid = "Galaxy A15";
 const char* password = "satvik0110";
 
-
+#define BUZZER_PIN 5  // D1
 #define CLK_PIN   14 //D5
 #define DATA_PIN  13 //D7
 #define CS_PIN    15 //D8
@@ -49,6 +49,10 @@ void handleDisplay() {
     currentMessage = customMessage;
     isCustomMessage = true;
     scrollCount = 0;
+      // Buzz for 2 seconds
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(2000);
+    digitalWrite(BUZZER_PIN, LOW);
 
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "text/plain", "Message set to: " + customMessage);
@@ -86,6 +90,8 @@ void scrollMessage(const char *message) {
 
 void setup() {
   Serial.begin(9600);
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);  // Ensure it's off at start
   mx.begin();
   mx.control(MD_MAX72XX::INTENSITY, 5);
   connectToWiFi();
@@ -102,7 +108,7 @@ void loop() {
 
   if (isCustomMessage) {
     scrollCount++;
-    if (scrollCount >= 10) {
+    if (scrollCount >= 5) {
       currentMessage = "SCRC Lab  ";
       isCustomMessage = false;
       scrollCount = 0;

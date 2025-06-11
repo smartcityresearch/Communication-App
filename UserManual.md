@@ -1,6 +1,6 @@
 # Communication App - User Manual
 
-Welcome to the Communication App! This guide will help you navigate through all the features and make the most of your communication experience.
+Welcome to the SCRC Communication App! This guide will help you navigate through all the features and make the most of your communication experience.
 
 ---
 
@@ -62,12 +62,13 @@ This is where you'll spend most of your time communicating with others.
 
 #### Sending Group Messages
 1. **Find Group Options**: Look for "Ping Software" or "Ping Hardware" buttons
-2. **Select Your Target Group**: Choose the department you want to message
+2. **Select Your Target Group**: Choose the department you want to message and enter your custom message.
 3. **Send Group Ping**: The message will be sent to all members of that domain
 
-**Group Message Content**:
-- Software group receives: "Software meet is starting!"
-- Hardware group receives: "Hardware meet is starting!"
+**Default Content if empty string entered**:
+- Software group ping receives: "Software meet is starting!"
+- Hardware group ping receives: "Hardware meet is starting!"
+- FOr individual pings: "{senderName}: Ping from {senderName}"
 - Display boards show the group meeting announcement
 
 #### Tracking Your Messages
@@ -97,7 +98,7 @@ This feature lets you control display boards around the facility.
 1. **Navigate to SCRC Tab**: Tap the second tab at the bottom
 2. **Enter Your Message**: You can write up to 4 lines of text
    - **Important**: Each line can have maximum 10 characters
-   - If you try to type more, you'll get an error
+   - If you try to type more, you'll be restricted and the app wont allow you to write further.
 3. **Send Message**: Once your message follows the rules, tap send
 
 #### Message Format Example
@@ -107,13 +108,6 @@ Line 2: TODAY       (10 chars max)
 Line 3: 3 PM        (10 chars max)
 Line 4: LAB 101     (10 chars max)
 ```
-
-**Where Your Message Appears**:
-- Physical display boards throughout the facility
-- Software interface screens
-- Message stays visible for the designated time period
-
----
 
 ## 👑 Admin Panel (Admin Users Only)
 
@@ -129,7 +123,7 @@ If you're registered as an admin, you'll see a third tab with administrative fun
 
 **Important Notes**:
 - Each key can only be used once
-- Keys expire automatically after some time for security
+- Keys expire automatically after 10 minutes for security
 - The generate button will be disabled briefly after clicking to prevent accidental multiple key generation
 - Keys are automatically cleaned up from the system periodically
 
@@ -152,12 +146,10 @@ If you're registered as an admin, you'll see a third tab with administrative fun
 1. **Check Permissions**: Ensure notification permissions are granted
 2. **Check Network**: Make sure you have internet connectivity
 3. **Restart App**: Close and reopen the app
-4. **Contact Admin**: If issues persist, contact an admin for help
 
 ### Display Board Issues
 - **SCRC Messenger Not Working**: Ensure you're connected to IIIT network
 - **Messages Not Appearing**: Check if display boards are powered on
-- **Character Limit Errors**: Remember the 10-character limit per line
 
 ---
 
