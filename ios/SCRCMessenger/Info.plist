@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>test2</string>
+    <string>SCRC Messenger</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,14 +27,14 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>test2</string>
-          <string>com.satvik-0110.test2</string>
+          <string>scrc_messenger</string>
+          <string>com.satvik-0110.scrcmessenger</string>
         </array>
       </dict>
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+test2</string>
+          <string>exp+scrcmessenger</string>
         </array>
       </dict>
     </array>

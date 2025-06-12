@@ -1,4 +1,4 @@
-package com.satvik_0110.test2
+package com.satvik_0110.scrc_messenger
 
 import android.app.Application
 import android.content.res.Configuration

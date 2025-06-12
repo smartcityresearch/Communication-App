@@ -1,4 +1,4 @@
-package com.satvik_0110.test2
+package com.satvik_0110.scrc_messenger
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

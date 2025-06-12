@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "test2",
-    "slug": "test2",
+    "name": "SCRC Messenger",
+    "slug": "scrc_messenger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "test2",
+    "scheme": "scrc_messenger",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.satvik-0110.test2"
+      "bundleIdentifier": "com.satvik-0110.scrcmessenger"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -19,7 +19,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.satvik_0110.test2"
+      "package": "com.satvik_0110.scrc_messenger"
     },
     "web": {
       "bundler": "metro",
@@ -44,8 +44,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ea5b3a53-13dd-4b52-8e5a-3b50450def63"
+        "projectId": "d69b9805-4b02-4c04-8250-464d305f258b"
       }
-    }
+    },
+    "owner": "satvik_0110"
   }
 }

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "test2.app"
-               BlueprintName = "test2"
-               ReferencedContainer = "container:test2.xcodeproj">
+               BuildableName = "SCRCMessenger.app"
+               BlueprintName = "SCRCMessenger"
+               ReferencedContainer = "container:SCRCMessenger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "test2Tests.xctest"
-               BlueprintName = "test2Tests"
-               ReferencedContainer = "container:test2.xcodeproj">
+               BuildableName = "SCRCMessengerTests.xctest"
+               BlueprintName = "SCRCMessengerTests"
+               ReferencedContainer = "container:SCRCMessenger.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "test2.app"
-            BlueprintName = "test2"
-            ReferencedContainer = "container:test2.xcodeproj">
+            BuildableName = "SCRCMessenger.app"
+            BlueprintName = "SCRCMessenger"
+            ReferencedContainer = "container:SCRCMessenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "test2.app"
-            BlueprintName = "test2"
-            ReferencedContainer = "container:test2.xcodeproj">
+            BuildableName = "SCRCMessenger.app"
+            BlueprintName = "SCRCMessenger"
+            ReferencedContainer = "container:SCRCMessenger.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

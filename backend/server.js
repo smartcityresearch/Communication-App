@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Firebase from firebase config file.
-const serviceAccount = require('./test2-537f3-firebase-adminsdk-fbsvc-02eec8b1f1.json');
+const serviceAccount = require('./scrc-messenger-firebase-adminsdk-fbsvc-9664b455d6.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -25,7 +25,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const displayBoardURL={
   'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.30/display?msg='],
   'hardware': ['http://192.168.19.122/display?msg='],
-  'admin': ['http://192.168.19.234/display?msg=']
+  'admin': ['http://192.168.19.30/display?msg='] 
 }
 
 //Endpoint to handle individual ping
@@ -115,9 +115,9 @@ app.post('/send-ping', async (req, res) => {
     //delivering push notification via firebase
     await admin.messaging().send(messagePayload);
     //Display Messages on display boards corresponding to recipient's domain
-    for (const url of displayBoardURL[recipient.domain] || []) {
-  await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
-}
+//     for (const url of displayBoardURL[recipient.domain] || []) {
+//   await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
+// }
     console.log('Ping sent');
     res.json({ success: true, notification });
     //error handling
@@ -187,11 +187,11 @@ app.post('/send-group-ping', async (req, res) => {
         title: 'Group Ping',
         body: finalMessage,
       }
-    });
+    });   
     //corresponding display boards to see the message
-    for (const url of displayBoardURL[topic]) {
-        await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
-    }
+    // for (const url of displayBoardURL[topic]) {
+    //     await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
+    // }
     console.log('Group ping sent');
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {

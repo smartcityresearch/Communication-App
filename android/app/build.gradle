@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.satvik_0110.test2'
+    namespace 'com.satvik_0110.scrc_messenger'
     defaultConfig {
-        applicationId 'com.satvik_0110.test2'
+        applicationId 'com.satvik_0110.scrc_messenger'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
