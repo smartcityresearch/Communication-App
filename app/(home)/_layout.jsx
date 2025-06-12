@@ -8,54 +8,19 @@ import AdminIcon from '../../assets/images/admin.png';
 export default function TabLayout() {
   const { user } = useUser();
 
-  return (
-    <Tabs>
-      {/* Main home page */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          headerShown: false,
-          tabBarIcon: ({ focused, size }) => (
-            <Image
-              source={homeIcon}
-              style={{
-                width: size,
-                height: size,
-                tintColor: focused ? '#4a90e2' : '#999',
-              }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-  {/* SCRC Messenger page */}
-      <Tabs.Screen
-        name="messenger"
-        options={{
-          headerShown: false,
-          tabBarLabel: "Messenger",
-          tabBarIcon: ({ focused, size }) => (
-            <Image
-              source={MessengerIcon}
-              style={{
-                width: 60,
-                height: 60,
-                tintColor: focused ? '#4a90e2' : '#999',
-              }}
-              resizeMode="contain"
-            />
-          ),
-        }}
-      />
-    {/* Admin panel with restricted access */}
-      <Tabs.Screen
-        name="admin"
-        options={{
-          headerShown: false,
-          tabBarLabel: "admin",
-          href: !(user?.domain==='admin') ? null : "/admin",
-          tabBarIcon: ({ focused, size }) => (
+  const HomeTabIcon = ({ focused, size }) => (
+  <Image
+    source={homeIcon}
+    style={{
+      width: size,
+      height: size,
+      tintColor: focused ? '#4a90e2' : '#999',
+    }}
+    resizeMode="contain"
+  />
+);
+
+const adminTabIcon= ({ focused, size }) => (
             <Image
               source={AdminIcon}
               style={{
@@ -65,7 +30,48 @@ export default function TabLayout() {
               }}
               resizeMode="contain"
             />
-          ),
+          );
+
+const MessengerTabIcon = ({ focused, size }) => (
+            <Image
+              source={MessengerIcon}
+              style={{
+                width: 60,
+                height: 60,
+                tintColor: focused ? '#4a90e2' : '#999',
+              }}
+              resizeMode="contain"
+            />
+);
+
+  return (
+    <Tabs>
+      {/* Main home page */}
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          headerShown: false,
+          tabBarIcon: HomeTabIcon
+        }}
+      />
+  {/* SCRC Messenger page */}
+      <Tabs.Screen
+        name="messenger"
+        options={{
+          headerShown: false,
+          tabBarLabel: "Messenger",
+          tabBarIcon: MessengerTabIcon
+        }}
+      />
+    {/* Admin panel with restricted access */}
+      <Tabs.Screen
+        name="admin"
+        options={{
+          headerShown: false,
+          tabBarLabel: "admin",
+          href: (user?.domain!=='admin') ? null : "/admin",
+          tabBarIcon: adminTabIcon
         }}
       />
     </Tabs>

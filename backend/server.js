@@ -12,10 +12,13 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Firebase from firebase config file.
-const serviceAccount = require('./scrc-messenger-firebase-adminsdk-fbsvc-9664b455d6.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_KEY);
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
+
 //retireve credentials from .env and create supabase client for CRUD operations.
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -23,9 +26,9 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 //Display board ip's mapped by domain
 const displayBoardURL={
-  'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.30/display?msg='],
-  'hardware': ['http://192.168.19.122/display?msg='],
-  'admin': ['http://192.168.19.30/display?msg='] 
+  'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.122/display?msg='],
+  'hardware': ['http://192.168.19.30/display?msg='],
+  'admin': ['http://192.168.19.122/display?msg='] 
 }
 
 //Endpoint to handle individual ping
@@ -176,7 +179,7 @@ app.post('/send-group-ping', async (req, res) => {
   .select('id, name') // select only necessary fields
   .eq('fcm_token', sender_token)
   .single();
-  if(!validUser) return res.status(401).json({ error: 'Unauthorized access' });
+  if(!validUser || invalidError) return res.status(401).json({ error: 'Unauthorized access' });
   else console.log('User validated.');
 
   //send push notification
