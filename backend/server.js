@@ -5,6 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 require('dotenv').config({ path: '../.env' });
 const axios=require('axios');
+import displayBoardURL from './urls.json';
 
 const app = express();
 //middleware
@@ -23,13 +24,6 @@ admin.initializeApp({
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-//Display board ip's mapped by domain
-const displayBoardURL={
-  'software':['http://192.168.19.234/display?msg=', 'http://192.168.19.117/display?msg=', 'http://192.168.19.122/display?msg='],
-  'hardware': ['http://192.168.19.30/display?msg='],
-  'admin': ['http://192.168.19.122/display?msg='] 
-}
 
 //Endpoint to handle individual ping
 app.post('/send-ping', async (req, res) => {

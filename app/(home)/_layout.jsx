@@ -5,19 +5,16 @@ import homeIcon from '../../assets/images/home.png';
 import MessengerIcon from '../../assets/images/messenger.png';
 import AdminIcon from '../../assets/images/admin.png';
 
-export default function TabLayout() {
-  const { user } = useUser();
-
-  const HomeTabIcon = ({ focused, size }) => (
-  <Image
-    source={homeIcon}
-    style={{
-      width: size,
-      height: size,
-      tintColor: focused ? '#4a90e2' : '#999',
-    }}
-    resizeMode="contain"
-  />
+const HomeTabIcon = ({ focused, size }) => (
+<Image
+  source={homeIcon}
+  style={{
+    width: size,
+    height: size,
+    tintColor: focused ? '#4a90e2' : '#999',
+  }}
+  resizeMode="contain"
+/>
 );
 
 const adminTabIcon= ({ focused, size }) => (
@@ -43,6 +40,11 @@ const MessengerTabIcon = ({ focused, size }) => (
               resizeMode="contain"
             />
 );
+
+
+export default function TabLayout() {
+  const { user } = useUser();
+
 
   return (
     <Tabs>

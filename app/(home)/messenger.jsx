@@ -1,14 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
 import styles from '../../styles/messenger';
-
 // Hard-coded IPs for display boards
-const LOCATIONS = [
-  { name: 'SCRC LAB 1', uri: 'http://10.2.201.167:8100/update' },
-  { name: 'HARDWARE LAB', uri: 'http://10.2.201.164:6001' },
-  { name: 'DISPLAY BOARD', uri: 'http://10.2.201.147:8100/update' },
-  { name: 'SOFTWARE LAB', uri: 'http://10.2.201.145:8100' },
-];
+import LOCATIONS from '../../messenger_urls.json';
 
 const COMMAND_SUGGESTIONS = ['aq', 'srEM', 'wd', 'wf', 'wn'];
 
