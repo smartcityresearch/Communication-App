@@ -200,11 +200,11 @@ export default function Index() {
             disabled={loading || !accessKey.trim() || keyVerified}
           />
            {/* Error text in case of invalid or success text if verified*/}
-          {keyError ? (
-            <Text style={styles.errorText}>{keyError}</Text>
-          ) : keyVerified ? (
-            <Text style={styles.successText}>✓ Key verified successfully</Text>
-          ) : null}
+          {keyError?(
+            <Text style={styles.errorText}>{keyError}</Text>):null} 
+          {keyVerified ? (
+                      <Text style={styles.successText}>✓ Key verified successfully</Text>
+                    ) : null}
         </>
       )}
        {/* Main submit button */}

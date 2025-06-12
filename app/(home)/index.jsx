@@ -129,9 +129,6 @@ const updatePingStatus = async (notificationId, status) => {
     if (stored) {
       const pings = JSON.parse(stored);
 
-      // Find the ping we're trying to update by mtaching notification id
-      const pingToUpdate = pings.find(p => p.notificationId === notificationId);
-
       //store updated pings
       const updatedPings = pings.map(ping => 
         ping.notificationId === notificationId.toString() 

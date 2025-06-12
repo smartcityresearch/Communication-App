@@ -1,174 +1,107 @@
 import { useState } from 'react';
-import {View,Text,TextInput, TouchableOpacity,Alert, ScrollView, SafeAreaView} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
 import styles from '../../styles/messenger';
 
+// Hard-coded IPs for display boards
+const LOCATIONS = [
+  { name: 'SCRC LAB 1', uri: 'http://10.2.201.167:8100/update' },
+  { name: 'HARDWARE LAB', uri: 'http://10.2.201.164:6001' },
+  { name: 'DISPLAY BOARD', uri: 'http://10.2.201.147:8100/update' },
+  { name: 'SOFTWARE LAB', uri: 'http://10.2.201.145:8100' },
+];
 
-//IMPORTANT: TO USE THIS APP, YOU MUST BE CONNECTED TO IIIT NETWORK!
+const COMMAND_SUGGESTIONS = ['aq', 'srEM', 'wd', 'wf', 'wn'];
 
-
-const messenger = () => {
+const Messenger = () => {
   const [activeTab, setActiveTab] = useState('announcement');
-  //used to store entered/selected data/location
   const [selectedLocation, setSelectedLocation] = useState('');
   const [announcementText, setAnnouncementText] = useState('');
-  const [line1, setLine1] = useState('');
-  const [line2, setLine2] = useState('');
-  const [line3, setLine3] = useState('');
-  const [line4, setLine4] = useState('');
+  const [lines, setLines] = useState(['', '', '', '']);
   const [command, setCommand] = useState('');
 
-    //hard-coded display board ip's
-  const locations = [
-    { name: 'SCRC LAB 1', uri: 'http://10.2.201.167:8100/update' },
-    { name: 'HARDWARE LAB', uri: 'http://10.2.201.164:6001' },
-    { name: 'DISPLAY BOARD', uri: 'http://10.2.201.147:8100/update' },
-    { name: 'SOFTWARE LAB', uri: 'http://10.2.201.145:8100' },
-  ];
-//for sensor data- taken from SCRC Messenger
-  const commandSuggestions = ['aq', 'srEM', 'wd', 'wf', 'wn'];
+  const getLocationURI = () => LOCATIONS.find(loc => loc.name === selectedLocation)?.uri;
 
-  //Send announcements, data type='TXT' [does not work, did not work in SCRC Messenger either]
-  const sendAnnouncementData = async () => {
-    if (!selectedLocation || !announcementText) {
-      Alert.alert('Error', 'Please select a location and enter announcement text');
-      return;
-    }
-
-    const location = locations.find(loc => loc.name === selectedLocation);
-    const jsonData = {
-      data: announcementText,
-      type: 'TXT'
-    };
+  const handleRequest = async (data, type) => {
+    const uri = getLocationURI();
+    if (!uri) return Alert.alert('Error', 'Please select a valid location');
 
     try {
-      const response = await fetch(location.uri, {
+      const response = await fetch(uri, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, type }),
       });
 
       if (response.ok) {
-        Alert.alert('Success', 'Announcement sent successfully!');
-        setAnnouncementText('');
+        Alert.alert('Success', `${type} sent successfully!`);
+        clearInputs(type);
       } else {
-        Alert.alert('Error', 'Failed to send announcement');
+        Alert.alert('Error', `Failed to send ${type.toLowerCase()}`);
       }
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       Alert.alert('Error', 'Network error occurred');
-      console.error('Error:', error);
-    }
-  };
-  //function to send 4 lines data with type TXT
-  const sendLinesData = async () => {
-    //error handling if no text entered and no location selected.
-    if (!selectedLocation || (!line1 && !line2 && !line3 && !line4)) {
-      Alert.alert('Error', 'Please select a location and enter at least one line');
-      return;
-    }
-
-    const location = locations.find(loc => loc.name === selectedLocation);
-    const jsonData = {
-      type: 'TXT'
-    };
-    //passing data as 4 lines in json(one, two, three, four)
-    if (line1) jsonData.one = line1;
-    if (line2) jsonData.two = line2;
-    if (line3) jsonData.three = line3;
-    if (line4) jsonData.four = line4;
-
-    try {
-      const response = await fetch(location.uri, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonData),
-      });
-      //successful => reset stored data.
-      if (response.ok) {
-        Alert.alert('Success', 'Lines sent successfully!');
-        setLine1('');
-        setLine2('');
-        setLine3('');
-        setLine4('');
-      } else {
-        Alert.alert('Error', 'Failed to send lines');
-      }
-      //error handling
-    } catch (error) {
-      Alert.alert('Error', 'Network error occurred');
-      console.error('Error:', error);
-    }
-  };
-  //for sensor data- does not work[did not work in SCRC messenger either]
-  const sendCommandData = async () => {
-    if (!selectedLocation || !command) {
-      Alert.alert('Error', 'Please select a location and enter a command');
-      return;
-    }
-    //payload type is CMD
-    const location = locations.find(loc => loc.name === selectedLocation);
-    const jsonData = {
-      data: command,
-      type: 'CMD'
-    };
-
-    try {
-      const response = await fetch(location.uri, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonData),
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'Command sent successfully!');
-        setCommand('');
-      } else {
-        Alert.alert('Error', 'Failed to send command');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Network error occurred');
-      console.error('Error:', error);
     }
   };
 
-  //UI component for Location selector
+  const clearInputs = (type) => {
+    if (type === 'TXT') {
+      setAnnouncementText('');
+      setLines(['', '', '', '']);
+    } else if (type === 'CMD') {
+      setCommand('');
+    }
+  };
+
   const renderLocationSelector = () => (
     <View style={styles.locationSelector}>
       <Text style={styles.sectionTitle}>Select Location:</Text>
-      {locations.map((location) => (
+      {LOCATIONS.map(({ name }) => (
         <TouchableOpacity
-          key={location.name}
+          key={name}
           style={[
             styles.locationButton,
-            selectedLocation === location.name && styles.selectedLocation
+            selectedLocation === name && styles.selectedLocation
           ]}
-          onPress={() => setSelectedLocation(location.name)}
+          onPress={() => setSelectedLocation(name)}
         >
-          <Text style={[
-            styles.locationButtonText,
-            selectedLocation === location.name && styles.selectedLocationText
-          ]}>
-            {location.name}
+          <Text
+            style={[
+              styles.locationButtonText,
+              selectedLocation === name && styles.selectedLocationText
+            ]}
+          >
+            {name}
           </Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 
-  //UI component for Announcement Tab
+  const LineInput = ({ index }) => (
+    <TextInput
+      style={styles.textInput}
+      placeholder={`Line ${index + 1}`}
+      placeholderTextColor="#888"
+      value={lines[index]}
+      onChangeText={text => {
+        if (text.length <= 10) {
+          const updated = [...lines];
+          updated[index] = text;
+          setLines(updated);
+        }
+      }}
+      maxLength={10}
+    />
+  );
+
   const renderAnnouncementTab = () => (
     <ScrollView style={styles.tabContent}>
       {renderLocationSelector()}
-      
+
       <View style={styles.inputSection}>
         <Text style={styles.sectionTitle}>Announcement Options:</Text>
-        
-        {/* Single Announcement */}
+
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Single Announcement:</Text>
           <TextInput
@@ -179,49 +112,34 @@ const messenger = () => {
             onChangeText={setAnnouncementText}
             multiline
           />
-          <TouchableOpacity style={styles.sendButton} onPress={sendAnnouncementData}>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              if (!selectedLocation || !announcementText)
+                return Alert.alert('Error', 'Please select location and enter announcement');
+              handleRequest({ data: announcementText }, 'TXT');
+            }}
+          >
             <Text style={styles.sendButtonText}>Send Announcement</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Multiple Lines (for Hardware Lab) */}
-        {/* Restricts characters to <=10 */}
-        
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Multiple Lines (Max 10 chars each):</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Line 1"
-            placeholderTextColor="#888"
-            value={line1}
-            onChangeText={(text) => text.length <= 10 && setLine1(text)}
-            maxLength={10}
-          />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Line 2"
-            placeholderTextColor="#888"
-            value={line2}
-            onChangeText={(text) => text.length <= 10 && setLine2(text)}
-            maxLength={10}
-          />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Line 3"
-            placeholderTextColor="#888"
-            value={line3}
-            onChangeText={(text) => text.length <= 10 && setLine3(text)}
-            maxLength={10}
-          />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Line 4"
-            placeholderTextColor="#888"
-            value={line4}
-            onChangeText={(text) => text.length <= 10 && setLine4(text)}
-            maxLength={10}
-          />
-          <TouchableOpacity style={styles.sendButton} onPress={sendLinesData}>
+          {[0, 1, 2, 3].map(i => <LineInput key={i} index={i} />)}
+
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              if (!selectedLocation || lines.every(line => line.trim() === ''))
+                return Alert.alert('Error', 'Please fill at least one line');
+              const payload = {};
+              lines.forEach((line, i) => {
+                if (line.trim()) payload[['one', 'two', 'three', 'four'][i]] = line;
+              });
+              handleRequest(payload, 'TXT');
+            }}
+          >
             <Text style={styles.sendButtonText}>Send Lines</Text>
           </TouchableOpacity>
         </View>
@@ -229,14 +147,13 @@ const messenger = () => {
     </ScrollView>
   );
 
-  //UI component for retrieving sensor data
   const renderSensorDataTab = () => (
     <ScrollView style={styles.tabContent}>
       {renderLocationSelector()}
-      
+
       <View style={styles.inputSection}>
         <Text style={styles.sectionTitle}>Sensor Commands:</Text>
-        
+
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Enter Command:</Text>
           <TextInput
@@ -246,60 +163,58 @@ const messenger = () => {
             value={command}
             onChangeText={setCommand}
           />
-          {/* Quick commands feature taken from SCRC messenger- to allow fast selection of sensor type */}
+
           <Text style={styles.inputLabel}>Quick Commands:</Text>
           <View style={styles.commandSuggestions}>
-            {commandSuggestions.map((suggestion) => (
+            {COMMAND_SUGGESTIONS.map(cmd => (
               <TouchableOpacity
-                key={suggestion}
+                key={cmd}
                 style={styles.suggestionButton}
-                onPress={() => setCommand(suggestion)}
+                onPress={() => setCommand(cmd)}
               >
-                <Text style={styles.suggestionButtonText}>{suggestion}</Text>
+                <Text style={styles.suggestionButtonText}>{cmd}</Text>
               </TouchableOpacity>
             ))}
           </View>
-          
-          <TouchableOpacity style={styles.sendButton} onPress={sendCommandData}>
+
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              if (!selectedLocation || !command.trim())
+                return Alert.alert('Error', 'Please select a location and enter a command');
+              handleRequest({ data: command.trim() }, 'CMD');
+            }}
+          >
             <Text style={styles.sendButtonText}>Send Command</Text>
           </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
   );
-  //Compiled overall UI
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>SCRC MESSENGER</Text>
       </View>
 
-      {/* Tab Navigation */}
       <View style={styles.tabNavigation}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'announcement' && styles.activeTab]}
-          onPress={() => setActiveTab('announcement')}
-        >
-          <Text style={[styles.tabText, activeTab === 'announcement' && styles.activeTabText]}>
-            Announcement
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'sensorData' && styles.activeTab]}
-          onPress={() => setActiveTab('sensorData')}
-        >
-          <Text style={[styles.tabText, activeTab === 'sensorData' && styles.activeTabText]}>
-            Sensor Data
-          </Text>
-        </TouchableOpacity>
+        {['announcement', 'sensorData'].map(tab => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+              {tab === 'announcement' ? 'Announcement' : 'Sensor Data'}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Tab Content */}
       {activeTab === 'announcement' ? renderAnnouncementTab() : renderSensorDataTab()}
     </SafeAreaView>
   );
 };
 
-
-export default messenger;
+export default Messenger;

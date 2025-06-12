@@ -19,7 +19,7 @@ const Admin = () => {
     setKey(result);
 
     //insert into supabase keys table
-    const { data, error } = await supabase
+    const {error } = await supabase
       .from('keys')
       .insert([{ key: result, used: false }]);
 
