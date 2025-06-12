@@ -1,0 +1,6 @@
+
+
+1. Deploy on server
+2. solder esp
+3. adjust ports and ip's 
+4. Final test with & without dev mode

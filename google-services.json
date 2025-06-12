@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "795613998229",
+    "project_id": "scrc-messenger",
+    "storage_bucket": "scrc-messenger.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795613998229:android:3b2f164ea09a9e34173f9c",
+        "android_client_info": {
+          "package_name": "com.satvik_0110.scrc_messenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHTvzqKPIF30rbxFsvQd276KTDoyktOpw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
