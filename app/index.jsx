@@ -171,6 +171,7 @@ export default function Index() {
     </View>
   </TouchableWithoutFeedback>
   <Picker
+    testID="domain-picker"
     ref={pickerRef}
     selectedValue={domain}
     onValueChange={(itemValue) => setDomain(itemValue)}

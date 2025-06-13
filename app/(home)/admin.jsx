@@ -42,7 +42,7 @@ const Admin = () => {
         disabled={isPressed}
       >
         {isPressed ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#fff" testID="loading-indicator" />
         ) : (
           <Text style={styles.buttonText}>Generate Key</Text>
         )}

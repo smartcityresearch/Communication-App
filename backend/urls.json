@@ -1,8 +1,8 @@
 {
   "software": [
-    "http://192.168.19.234/display?msg=",
     "http://192.168.19.117/display?msg=",
-    "http://192.168.19.122/display?msg="
+    "http://192.168.19.122/display?msg=",
+    "http://192.168.19.234/display?msg="
   ],
   "hardware": [
     "http://192.168.19.30/display?msg="

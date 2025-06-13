@@ -5,11 +5,11 @@ const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
 require('dotenv').config({ path: '../.env' });
 const axios=require('axios');
-import displayBoardURL from './urls.json';
+const displayBoardURL = require('./urls.json');
 
 const app = express();
 //middleware
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 // Initialize Firebase from firebase config file.
@@ -112,9 +112,9 @@ app.post('/send-ping', async (req, res) => {
     //delivering push notification via firebase
     await admin.messaging().send(messagePayload);
     //Display Messages on display boards corresponding to recipient's domain
-//     for (const url of displayBoardURL[recipient.domain] || []) {
-//   await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
-// }
+    for (const url of displayBoardURL[recipient.domain] || []) {
+  await axios.get(`${url}${sender?.name}%20sent%20msg%20to%20${recipient.name}`);
+}
     console.log('Ping sent');
     res.json({ success: true, notification });
     //error handling
@@ -186,9 +186,9 @@ app.post('/send-group-ping', async (req, res) => {
       }
     });   
     //corresponding display boards to see the message
-    // for (const url of displayBoardURL[topic]) {
-    //     await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
-    // }
+    for (const url of displayBoardURL[topic]) {
+        await axios.get(`${url}${encodeURIComponent(finalMessage)}`);
+    }
     console.log('Group ping sent');
     res.status(200).json({ success: true, message: 'Group ping sent' });
   } catch (error) {
